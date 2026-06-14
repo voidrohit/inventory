@@ -7,7 +7,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import PageHeader from "../../components/ui/PageHeader";
 import { Table, Td } from "../../components/ui/Table";
 import { EmptyState, ErrorState, Spinner } from "../../components/ui/States";
-import { useDeleteOrder, useOrders } from "../../hooks/useOrders";
+import { useOrders, useUpdateOrderStatus } from "../../hooks/useOrders";
 import { extractErrorMessage } from "../../lib/apiClient";
 import { formatCurrency, formatDate } from "../../lib/format";
 import OrderDetail from "./OrderDetail";
@@ -21,17 +21,19 @@ const STATUS_TONE = {
 
 export default function OrdersPage() {
   const { data: orders, isLoading, isError, error } = useOrders();
-  const deleteOrder = useDeleteOrder();
+  const updateStatus = useUpdateOrderStatus();
 
   const [formOpen, setFormOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
-  const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
 
-  async function confirmDelete() {
+  async function confirmAction() {
     try {
-      await deleteOrder.mutateAsync(pendingDelete.id);
-      toast.success("Order cancelled");
-      setPendingDelete(null);
+      await updateStatus.mutateAsync({ id: pendingAction.order.id, status: pendingAction.status });
+      toast.success(
+        pendingAction.status === "completed" ? "Order marked as completed" : "Order cancelled"
+      );
+      setPendingAction(null);
     } catch (err) {
       toast.error(extractErrorMessage(err));
     }
@@ -72,9 +74,22 @@ export default function OrdersPage() {
                   <Button variant="secondary" onClick={() => setDetailId(order.id)}>
                     View
                   </Button>
-                  <Button variant="ghost" onClick={() => setPendingDelete(order)}>
-                    Cancel
-                  </Button>
+                  {order.status === "pending" && (
+                    <>
+                      <Button
+                        variant="primary"
+                        onClick={() => setPendingAction({ order, status: "completed" })}
+                      >
+                        Complete
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setPendingAction({ order, status: "cancelled" })}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  )}
                 </div>
               </Td>
             </tr>
@@ -86,13 +101,17 @@ export default function OrdersPage() {
       <OrderDetail orderId={detailId} onClose={() => setDetailId(null)} />
 
       <ConfirmDialog
-        open={Boolean(pendingDelete)}
-        title="Cancel order"
-        message={`Cancel order #${pendingDelete?.id}? Stock will be restored.`}
-        confirmLabel="Cancel order"
-        loading={deleteOrder.isPending}
-        onConfirm={confirmDelete}
-        onClose={() => setPendingDelete(null)}
+        open={Boolean(pendingAction)}
+        title={pendingAction?.status === "completed" ? "Complete order" : "Cancel order"}
+        message={
+          pendingAction?.status === "completed"
+            ? `Mark order #${pendingAction?.order.id} as completed?`
+            : `Cancel order #${pendingAction?.order.id}? Stock will be restored.`
+        }
+        confirmLabel={pendingAction?.status === "completed" ? "Mark complete" : "Cancel order"}
+        loading={updateStatus.isPending}
+        onConfirm={confirmAction}
+        onClose={() => setPendingAction(null)}
       />
     </div>
   );

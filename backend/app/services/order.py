@@ -9,7 +9,7 @@ from app.models.order import Order, OrderItem, OrderStatus
 from app.repositories.customer import CustomerRepository
 from app.repositories.order import OrderRepository
 from app.repositories.product import ProductRepository
-from app.schemas.order import OrderCreate
+from app.schemas.order import OrderCreate, OrderStatusUpdate
 
 class OrderService:
     def __init__(self, db: Session):
@@ -33,7 +33,7 @@ class OrderService:
 
         self._reject_duplicate_products(payload)
 
-        order = Order(customer_id=payload.customer_id, status=OrderStatus.COMPLETED)
+        order = Order(customer_id=payload.customer_id, status=OrderStatus.PENDING)
         total = Decimal("0")
         currencies: set[str] = set()
 
@@ -66,10 +66,29 @@ class OrderService:
         self.db.commit()
         return self.get(order.id)
 
+    def update_status(self, order_id: int, payload: OrderStatusUpdate) -> Order:
+        order = self.get(order_id)
+        new_status = payload.status
+
+        if order.status != OrderStatus.PENDING:
+            raise ValidationError("Only pending orders can be updated")
+        if new_status == OrderStatus.PENDING:
+            raise ValidationError("Order is already pending")
+
+        if new_status == OrderStatus.CANCELLED:
+            for item in order.items:
+                product = self.products.get(item.product_id)
+                if product is not None:
+                    product.quantity_in_stock += item.quantity
+
+        order.status = new_status
+        self.db.commit()
+        return self.get(order_id)
+
     def delete(self, order_id: int) -> None:
         order = self.get(order_id)
 
-        if order.status != OrderStatus.CANCELLED:
+        if order.status == OrderStatus.PENDING:
             for item in order.items:
                 product = self.products.get(item.product_id)
                 if product is not None:
