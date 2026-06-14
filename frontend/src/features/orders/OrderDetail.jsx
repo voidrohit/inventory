@@ -17,6 +17,11 @@ export default function OrderDetail({ orderId, onClose }) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
+              <p className="text-slate-500">Customer</p>
+              <p className="font-medium text-slate-800">{order.customer?.full_name}</p>
+              <p className="text-xs text-slate-400">{order.customer?.email}</p>
+            </div>
+            <div>
               <p className="text-slate-500">Status</p>
               <p className="font-medium capitalize text-slate-800">{order.status}</p>
             </div>

@@ -62,7 +62,12 @@ export default function OrdersPage() {
           {orders.map((order) => (
             <tr key={order.id}>
               <Td className="font-medium text-slate-800">#{order.id}</Td>
-              <Td>{order.customer_id}</Td>
+              <Td>
+                <span className="block max-w-[140px] truncate font-medium text-slate-800" title={order.customer?.full_name}>
+                  {order.customer?.full_name ?? "—"}
+                </span>
+                <span className="text-xs text-slate-400">#{order.customer_id}</span>
+              </Td>
               <Td>{order.items.length}</Td>
               <Td>{formatCurrency(order.total_amount, order.currency)}</Td>
               <Td>
