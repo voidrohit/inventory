@@ -15,6 +15,13 @@ class OrderCreate(BaseModel):
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
 
+class CustomerSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    full_name: str
+    email: str
+
 class OrderItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -28,6 +35,7 @@ class OrderResponse(BaseModel):
 
     id: int
     customer_id: int
+    customer: CustomerSummary
     status: OrderStatus
     currency: Currency
     total_amount: Decimal
