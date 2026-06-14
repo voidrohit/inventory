@@ -67,6 +67,20 @@ export default function LoginPage() {
             {submitting ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+
+        <div className="mt-6 rounded-lg bg-slate-50 border border-slate-200 p-4">
+          <p className="text-xs font-medium text-slate-500 mb-2">Demo credentials</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-slate-500">Email</span>
+              <span className="font-mono text-slate-800">admin@ethara.ai</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-slate-500">Password</span>
+              <span className="font-mono text-slate-800">admin@12345</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
