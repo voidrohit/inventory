@@ -15,6 +15,11 @@ export async function createOrder(payload) {
   return data;
 }
 
+export async function updateOrderStatus(id, status) {
+  const { data } = await apiClient.patch(`/orders/${id}/status`, { status });
+  return data;
+}
+
 export async function deleteOrder(id) {
   await apiClient.delete(`/orders/${id}`);
 }

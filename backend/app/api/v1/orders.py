@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query, status
 from app.api.deps import CurrentUser, DbSession
-from app.schemas.order import OrderCreate, OrderResponse
+from app.schemas.order import OrderCreate, OrderResponse, OrderStatusUpdate
 from app.services.order import OrderService
 
 router = APIRouter(prefix="/orders", tags=["orders"])
@@ -21,6 +21,12 @@ def get_order(order_id: int, db: DbSession, _: CurrentUser) -> OrderResponse:
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(payload: OrderCreate, db: DbSession, _: CurrentUser) -> OrderResponse:
     return OrderService(db).create(payload)
+
+@router.patch("/{order_id}/status", response_model=OrderResponse)
+def update_order_status(
+    order_id: int, payload: OrderStatusUpdate, db: DbSession, _: CurrentUser
+) -> OrderResponse:
+    return OrderService(db).update_status(order_id, payload)
 
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_order(order_id: int, db: DbSession, _: CurrentUser) -> None:

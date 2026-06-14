@@ -12,6 +12,9 @@ class OrderCreate(BaseModel):
     customer_id: int
     items: list[OrderItemCreate] = Field(min_length=1)
 
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
+
 class OrderItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
